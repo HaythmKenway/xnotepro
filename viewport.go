@@ -3,8 +3,8 @@ import (
 	"fmt"
 	"os"
 	"strings"
-	"time"
 
+	
 	"github.com/charmbracelet/lipgloss"
 )
 
@@ -15,20 +15,35 @@ func (m Model) headerView() string {
 }
 
 func (m Model) footerView() string {
-	info := infoStyle.Render(fmt.Sprintf("%3.f%%", m.viewport.ScrollPercent()*100))
+	info := infoStyle.Render(fmt.Sprintf("%3.f%%", 100-m.viewport.ScrollPercent()*100))
 	line := strings.Repeat("\033[34;1;1m─\033[0m", max(0, m.viewport.Width/2-5*lipgloss.Width(info)))
 	return lipgloss.JoinHorizontal(lipgloss.Center, line, info)
 }
-//there is some problem over here
-func (m Model) updateLogger() string{
-	content, err := os.ReadFile("log4j.log")
-	if err != nil {
-		fmt.Println("could not load file:", err)
-		os.Exit(1)
-		time.Sleep(8 * time.Second)
-		fmt.Print(string(content))
-	return string(content)
-	}
-	return ""
-}
 
+/*func  updateLogger() string {
+    content, err := os.ReadFile("log4j.log")
+    if err != nil {
+        return ""
+    }
+    
+    return string(content)
+}
+*/
+
+func updateLogger() string {
+	content, err := os.ReadFile(getWorkingDirectory()+"/log4j.log")
+	if err != nil {
+		return ""
+	}
+
+	lines := strings.Split(string(content), "\n")
+	reversedContent := ""
+	for i := len(lines) - 1; i >= 0; i-- {
+		line := strings.TrimSpace(lines[i])
+		if line != "" {
+			reversedContent += line + "\n"
+		}
+	}
+
+	return reversedContent
+}
