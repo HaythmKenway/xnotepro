@@ -4,8 +4,8 @@ import (
 	"fmt"
 	"os"
 
-	"github.com/charmbracelet/bubbles/list"
 	"github.com/charmbracelet/bubbles/timer"
+	clist "github.com/charmbracelet/bubbles/list"
 	"github.com/charmbracelet/bubbles/viewport"
 	tea "github.com/charmbracelet/bubbletea"
 	"github.com/charmbracelet/lipgloss"
@@ -31,15 +31,13 @@ func (m Model) Init() tea.Cmd{return nil}
 
 //defining tasks 
 func (m *Model) initLists(width,height int){
-	defaultList :=list.New([]list.Item{},list.NewDefaultDelegate(),width/4,height/2)
-	m.tasks=[]list.Model{defaultList}
+	tasks:=getTasks()//[]clist.Item{}
+	//tasks=append(tasks,TimeCell{title: "Task1",description: "lame things" })
+	//tasks=append(tasks, TimeCell{title: "Task2",description: "nothing" })
+	defaultList :=clist.New([]clist.Item{},clist.NewDefaultDelegate(),width/4,height/2)
+	m.tasks=[]clist.Model{defaultList}
 	m.tasks[running].Title="Tasks"
-	m.tasks[running].SetItems([]list.Item{
-	TimeCell{status: running,title: "Task1",description: "lame things" },
-	TimeCell{status: running,title: "Task2",description: "nothing" },
-	})
-
-
+	m.tasks[running].SetItems(tasks)
 }
 
 //function to return view 
@@ -49,12 +47,15 @@ func (m Model) View() string{
 	if m.loaded{
 		timerView:=m.tasks[running].View()
 		okButton:=activeButtonStyle.Render("Add New")
-		switch m.focused{
-		case notes:
-		return lipgloss.JoinHorizontal(lipgloss.Left,focusedStyling.Render(timerView),)//columnStyling.Render(timerView),columnStyling.Render(notesView))
-		default:
-		return lipgloss.JoinHorizontal(lipgloss.Left,lipgloss.JoinVertical(lipgloss.Center,focusedStyling.Render(timerView),okButton,),lipgloss.JoinVertical(lipgloss.Left,m.headerView(), m.viewport.View(), m.footerView(),m.Styles.InputField.Render(m.answer.View())),)//columnStyling.Render(timerView),columnStyling.Render(notesView))
-}}
+	//	switch m.focused{
+	//	case notes:
+	//	return lipgloss.JoinHorizontal(lipgloss.Left,focusedStyling.Render(timerView),)
+	//	default:
+		clistPane:=lipgloss.JoinVertical(lipgloss.Center,focusedStyling.Render(timerView),okButton,)
+		loggerPane:=lipgloss.JoinVertical(lipgloss.Left,m.headerView(), m.viewport.View(), m.footerView(),m.Styles.InputField.Render(m.answer.View()))
+		return lipgloss.JoinHorizontal(lipgloss.Left,clistPane,loggerPane,)//columnStyling.Render(timerView),columnStyling.Render(notesView))
+}
+//}
 return "Loading..."}
 
 //update function to update values
@@ -76,10 +77,10 @@ func (m Model) Update(msg tea.Msg) (tea.Model,tea.Cmd){
 			m.viewport.HighPerformanceRendering = useHighPerformanceRenderer
 			m.viewport.YPosition = headerHeight + 1
 			m.viewport.SetContent(m.content)
-			//for viewing list 
+			//for viewing clist 
 			m.initLists(msg.Width,msg.Height)
-			columnStyling.Width(msg.Width/3)
-			focusedStyling.Width(msg.Width/3)
+			columnStyling.Width(msg.Width/5)
+			focusedStyling.Width(msg.Width/5)
 			columnStyling.Height(msg.Height-8)
 			focusedStyling.Height(msg.Height-8)
 			m.loaded=true
@@ -113,6 +114,7 @@ func (m Model) Update(msg tea.Msg) (tea.Model,tea.Cmd){
 
 func main(){
 	WORKDIR:=getWorkingDirectory()
+	db()
 	content, err := os.ReadFile(WORKDIR+"/log4j.log")
 	if err != nil {
 		fmt.Println("could not load file:", err)

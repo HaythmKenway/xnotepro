@@ -4,20 +4,41 @@ import (
 	"time"
 
 	"github.com/charmbracelet/bubbles/textinput"
-	"github.com/charmbracelet/bubbles/list"
+	clist "github.com/charmbracelet/bubbles/list"
 	"github.com/charmbracelet/bubbles/timer"
 	"github.com/charmbracelet/bubbles/viewport"
 	"github.com/charmbracelet/lipgloss"
 )
 
 
+const timeout=time.Second*3
+//constants
+type status int 
+const(
+	running status=iota
+	notes
+	info
+)
+
+// model for the program
+type TimeCell struct{
+status status
+title string
+description string
+}
+
+
+
+type State struct{
+ focusedPane int 
+}
 
 type Model struct{
 focused status
 loaded bool
 addNew bool
 answer textinput.Model
-tasks []list.Model
+tasks []clist.Model
 err error
 Styles *Styles
 timer timer.Model
@@ -49,25 +70,8 @@ var(
 		return titleStyle.Copy().BorderStyle(b)
 	}()
 	columnStyling=lipgloss.NewStyle().Padding(1,2)
-	activeButtonStyle=lipgloss.NewStyle().Foreground(lipgloss.Color("#000000")).Background(lipgloss.Color("#F25D94")).Padding(1,24).Border(lipgloss.RoundedBorder()).BorderForeground(lipgloss.Color("69"))
+	activeButtonStyle=lipgloss.NewStyle().Foreground(lipgloss.Color("#000000")).Background(lipgloss.Color("#F25D94")).Padding(1,16).Border(lipgloss.RoundedBorder()).BorderForeground(lipgloss.Color("69"))
 	focusedStyling=lipgloss.NewStyle().Padding(1,2).Border(lipgloss.RoundedBorder()).BorderForeground(lipgloss.Color("69"))
 )
-
-
-const timeout=time.Second*3
-//constants
-type status int 
-const(
-	running status=iota
-	notes
-	info
-)
-
-// model for the program
-type TimeCell struct{
-status status
-title string
-description string
-}
 
 
